@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>16:1 MUX</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1e1e1e;
+            color: #dcdcdc;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            margin-top: 10%;
+            background-color: rgba(30, 30, 30, 0.85);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        h1 {
+            color: #00ccff;
+        }
+
+        pre {
+            background-color: #2d2d2d;
+            color: #00ccff;
+            padding: 10px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        input[type="text"] {
+            width: 80%;
+            height: 40px;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #00ccff;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #00ccff;
+            color: #1e1e1e;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #008fb3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>16:1 MUX Verilog Code</h1>
+        <input type="text" id="regNumber" placeholder="Enter Your Registration Number" />
+        <button onclick="generateCode()">Generate Code</button>
+        <pre id="verilogOutput"></pre>
+        <button onclick="copyCode()">Copy Code</button>
+        <button onclick="openJdoodle()">Open JDoodle</button>
+    </div>
+
+    <script>
+        // Function to generate Verilog code and testbench for 16:1 MUX based on registration number input
+        function generateCode() {
+            const regNumber = document.getElementById("regNumber").value.trim().toUpperCase();
+            const minterms = [];
+
+            // Map hexadecimal letters to numbers (A = 10, B = 11, ..., F = 15)
+            const hexMap = { 'A': 10, 'B': 11, 'C': 12, 'D': 13, 'E': 14, 'F': 15 };
+
+            // Convert registration number to corresponding minterms (0-15 for each hexadecimal character)
+            for (let i = 0; i < regNumber.length; i++) {
+                const char = regNumber[i];
+                if (/[0-9]/.test(char)) {
+                    minterms.push(parseInt(char)); // Add digits (0-9) as minterms
+                } else if (/[A-F]/.test(char)) {
+                    minterms.push(hexMap[char]); // Map A-F to corresponding values
+                }
+            }
+
+            // Remove duplicates from the minterms array
+            const uniqueMinterms = [...new Set(minterms)];
+
+            // Generate Verilog code for 16:1 MUX
+            let verilogCode = "module mux16to1(\n";
+            verilogCode += "    input [15:0] I,\n"; // 16 input lines
+            verilogCode += "    input [3:0] S,\n"; // 4 select lines
+            verilogCode += "    output Y\n";
+            verilogCode += ");\n";
+            verilogCode += "    assign Y = (S == 4'b0000) ? I[0] :\n";
+            uniqueMinterms.forEach((minterm, index) => {
+                const binary = minterm.toString(2).padStart(4, '0');
+                verilogCode += `               (S == 4'b${binary}) ? I[${minterm}] :\n`;
+            });
+            verilogCode += "               1'b0; // Default case\n";
+            verilogCode += "endmodule\n\n";
+
+            // Generate the testbench code
+            let testbenchCode = `module testbench;\n`;
+            testbenchCode += `    reg [15:0] I;\n`;
+            testbenchCode += `    reg [3:0] S;\n`;
+            testbenchCode += `    wire Y;\n`;
+            testbenchCode += `    mux16to1 uut (.I(I), .S(S), .Y(Y));\n\n`;
+            testbenchCode += `    initial begin\n`;
+            testbenchCode += `        I = 16'b1010101010101010; // Test input pattern\n`;
+            testbenchCode += `        $monitor("Time: %0t | S = %b | Y = %b", $time, S, Y);\n`;
+
+            // Test all combinations of S (select lines)
+            for (let i = 0; i < 16; i++) {
+                testbenchCode += `        S = 4'b${i.toString(2).padStart(4, '0')}; #10;\n`;
+            }
+            testbenchCode += `        $finish;\n`;
+            testbenchCode += `    end\n`;
+            testbenchCode += `endmodule\n`;
+
+            // Display the generated Verilog code and testbench
+            document.getElementById("verilogOutput").textContent = verilogCode + '\n\n' + '// Testbench\n' + testbenchCode;
+        }
+
+        // Function to copy code to clipboard
+        function copyCode() {
+            const codeElement = document.getElementById("verilogOutput");
+            const range = document.createRange();
+            range.selectNode(codeElement);
+            window.getSelection().removeAllRanges(); // Clear current selection
+            window.getSelection().addRange(range); // Select the code
+            document.execCommand("copy"); // Copy the selected code
+            window.getSelection().removeAllRanges(); // Deselect the code
+            alert("Code copied to clipboard!");
+        }
+
+        // Function to open JDoodle with the Verilog code
+        function openJdoodle() {
+            const jdoodleUrl = "https://www.jdoodle.com/verilog-online-compiler";
+            window.open(jdoodleUrl, '_blank');
+        }
+    </script>
+</body>
+</html>
