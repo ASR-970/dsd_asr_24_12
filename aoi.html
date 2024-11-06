@@ -126,8 +126,8 @@
                 const binary = i.toString(2).padStart(4, '0');
                 verilogCode += `        #10 A = ${binary[0]}; B = ${binary[1]}; C = ${binary[2]}; D = ${binary[3]};\n`;
 
-                // Set the output to 1 for minterms that are NOT in the registration number (invert the condition)
-                if (!uniqueMinterms.includes(i)) {
+                // Set the output to 1 for minterms that ARE in the registration number
+                if (uniqueMinterms.includes(i)) {
                     verilogCode += `        $display("${binary[0]} ${binary[1]} ${binary[2]} ${binary[3]} | 1");\n`;
                 } else {
                     verilogCode += `        $display("${binary[0]} ${binary[1]} ${binary[2]} ${binary[3]} | 0");\n`;
