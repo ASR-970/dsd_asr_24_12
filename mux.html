@@ -36,6 +36,7 @@
             border-radius: 5px;
             white-space: pre-wrap;
             word-wrap: break-word;
+            text-align: left;
         }
 
         input[type="text"] {
@@ -71,56 +72,56 @@
         <button onclick="generateCode()">Generate Code</button>
         <pre id="verilogOutput"></pre>
         <button onclick="copyCode()">Copy Code</button>
-        <button onclick="openJdoodle()">Open JDoodle</button>
+        <button onclick="openSimulator()">Open Verilog Simulator</button>
     </div>
 
     <script>
-        // Function to generate Verilog code and testbench for 16:1 MUX based on registration number input
         function generateCode() {
             const regNumber = document.getElementById("regNumber").value.trim().toUpperCase();
-            const minterms = [];
 
-            // Map hexadecimal letters to numbers (A = 10, B = 11, ..., F = 15)
+            const minterms = [];
             const hexMap = { 'A': 10, 'B': 11, 'C': 12, 'D': 13, 'E': 14, 'F': 15 };
 
-            // Convert registration number to corresponding minterms (0-15 for each hexadecimal character)
             for (let i = 0; i < regNumber.length; i++) {
                 const char = regNumber[i];
                 if (/[0-9]/.test(char)) {
-                    minterms.push(parseInt(char)); // Add digits (0-9) as minterms
+                    minterms.push(parseInt(char));
                 } else if (/[A-F]/.test(char)) {
-                    minterms.push(hexMap[char]); // Map A-F to corresponding values
+                    minterms.push(hexMap[char]);
                 }
             }
 
-            // Remove duplicates from the minterms array
             const uniqueMinterms = [...new Set(minterms)];
+            const inputLabels = "ABCDEFGHIJKLMNOP".split("");
 
-            // Generate Verilog code for 16:1 MUX
             let verilogCode = "module mux16to1(\n";
-            verilogCode += "    input [15:0] I,\n"; // 16 input lines
-            verilogCode += "    input [3:0] S,\n"; // 4 select lines
+            verilogCode += "    input " + inputLabels.map(label => label).join(", ") + ",\n";
+            verilogCode += "    input [3:0] S,\n";
             verilogCode += "    output Y\n";
             verilogCode += ");\n";
-            verilogCode += "    assign Y = (S == 4'b0000) ? I[0] :\n";
-            uniqueMinterms.forEach((minterm, index) => {
+            verilogCode += "    assign Y = (S == 4'b0000) ? A :\n";
+
+            uniqueMinterms.forEach((minterm) => {
                 const binary = minterm.toString(2).padStart(4, '0');
-                verilogCode += `               (S == 4'b${binary}) ? I[${minterm}] :\n`;
+                verilogCode += `               (S == 4'b${binary}) ? ${inputLabels[minterm]} :\n`;
             });
             verilogCode += "               1'b0; // Default case\n";
             verilogCode += "endmodule\n\n";
 
-            // Generate the testbench code
             let testbenchCode = `module testbench;\n`;
-            testbenchCode += `    reg [15:0] I;\n`;
+            inputLabels.forEach(label => {
+                testbenchCode += `    reg ${label};\n`;
+            });
             testbenchCode += `    reg [3:0] S;\n`;
             testbenchCode += `    wire Y;\n`;
-            testbenchCode += `    mux16to1 uut (.I(I), .S(S), .Y(Y));\n\n`;
+            testbenchCode += `    mux16to1 uut (.${inputLabels.map(label => label).join(", .")}, .S(S), .Y(Y));\n\n`;
             testbenchCode += `    initial begin\n`;
-            testbenchCode += `        I = 16'b1010101010101010; // Test input pattern\n`;
+
+            inputLabels.forEach(label => {
+                testbenchCode += `        ${label} = 1'b1;\n`;
+            });
             testbenchCode += `        $monitor("Time: %0t | S = %b | Y = %b", $time, S, Y);\n`;
 
-            // Test all combinations of S (select lines)
             for (let i = 0; i < 16; i++) {
                 testbenchCode += `        S = 4'b${i.toString(2).padStart(4, '0')}; #10;\n`;
             }
@@ -128,26 +129,21 @@
             testbenchCode += `    end\n`;
             testbenchCode += `endmodule\n`;
 
-            // Display the generated Verilog code and testbench
             document.getElementById("verilogOutput").textContent = verilogCode + '\n\n' + '// Testbench\n' + testbenchCode;
         }
 
-        // Function to copy code to clipboard
         function copyCode() {
-            const codeElement = document.getElementById("verilogOutput");
-            const range = document.createRange();
-            range.selectNode(codeElement);
-            window.getSelection().removeAllRanges(); // Clear current selection
-            window.getSelection().addRange(range); // Select the code
-            document.execCommand("copy"); // Copy the selected code
-            window.getSelection().removeAllRanges(); // Deselect the code
-            alert("Code copied to clipboard!");
+            const codeText = document.getElementById("verilogOutput").textContent;
+            navigator.clipboard.writeText(codeText).then(() => {
+                alert("Code copied to clipboard!");
+            }).catch((err) => {
+                alert("Failed to copy code: " + err);
+            });
         }
 
-        // Function to open JDoodle with the Verilog code
-        function openJdoodle() {
-            const jdoodleUrl = "https://www.jdoodle.com/verilog-online-compiler";
-            window.open(jdoodleUrl, '_blank');
+        function openSimulator() {
+            const simulatorUrl = "https://www.tutorialspoint.com/compile_verilog_online.php";
+            window.open(simulatorUrl, '_blank');
         }
     </script>
 </body>
