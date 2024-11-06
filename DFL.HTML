@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Flow Model</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1e1e1e;
+            color: #dcdcdc;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            margin-top: 10%;
+            background-color: rgba(30, 30, 30, 0.85);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        h1 {
+            color: #00ccff;
+        }
+
+        pre {
+            background-color: #2d2d2d;
+            color: #00ccff;
+            padding: 10px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        input[type="text"] {
+            width: 80%;
+            height: 40px;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #00ccff;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #00ccff;
+            color: #1e1e1e;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #008fb3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Data Flow Model Verilog Code</h1>
+        <input type="text" id="regNumber" placeholder="Enter Your Registration Number" />
+        <button onclick="generateCode()">Generate Code</button>
+        <pre id="verilogOutput"></pre>
+        <button onclick="copyCode()">Copy Code</button>
+        <button onclick="openJdoodle()">Open JDoodle</button>
+    </div>
+
+    <script>
+        // Function to generate Data Flow Verilog code and testbench based on registration number input
+        function generateCode() {
+            const regNumber = document.getElementById("regNumber").value.trim().toUpperCase();
+            const minterms = [];
+
+            // Hexadecimal mapping for A to F
+            const hexMap = {
+                'A': 10,
+                'B': 11,
+                'C': 12,
+                'D': 13,
+                'E': 14,
+                'F': 15
+            };
+
+            // Determine the minterms based on the registration number
+            for (let char of regNumber) {
+                if (!isNaN(parseInt(char))) {
+                    minterms.push(parseInt(char)); // Numbers 0-9
+                } else if (hexMap[char] !== undefined) {
+                    minterms.push(hexMap[char]); // Hexadecimal letters A-F
+                }
+            }
+
+            // Remove duplicates from the minterms array
+            const uniqueMinterms = [...new Set(minterms)];
+
+            // Generate Data Flow Verilog code
+            let verilogCode = "module logic_function(\n";
+            verilogCode += "    input [3:0] A,\n";
+            verilogCode += "    output F\n";
+            verilogCode += ");\n";
+            verilogCode += "    assign F = (" + uniqueMinterms.map(minterm => `A == 4'b${minterm.toString(2).padStart(4, '0')}`).join(") | (") + ");\n";
+            verilogCode += "endmodule\n";
+
+            // Generate the testbench code
+            let testbenchCode = `module testbench;\n`;
+            testbenchCode += `    reg [3:0] A;\n`;
+            testbenchCode += `    wire F;\n`;
+            testbenchCode += `    logic_function uut (.A(A), .F(F));\n`;
+            testbenchCode += `    initial begin\n`;
+            testbenchCode += `        $monitor("A = %b, F = %b", A, F);\n`;
+            testbenchCode += `        A = 4'b0000; #10;\n`;
+            for (let i = 1; i < 16; i++) {
+                testbenchCode += `        A = 4'b${i.toString(2).padStart(4, '0')}; #10;\n`;
+            }
+            testbenchCode += `        $finish;\n`;
+            testbenchCode += `    end\n`;
+            testbenchCode += `endmodule\n`;
+
+            // Display the generated Verilog code and testbench
+            document.getElementById("verilogOutput").textContent = verilogCode + '\n\n' + '// Testbench\n' + testbenchCode;
+        }
+
+        // Function to copy code to clipboard
+        function copyCode() {
+            const codeElement = document.getElementById("verilogOutput");
+            const range = document.createRange();
+            range.selectNode(codeElement);
+            window.getSelection().removeAllRanges(); // Clear current selection
+            window.getSelection().addRange(range); // Select the code
+            document.execCommand("copy"); // Copy the selected code
+            window.getSelection().removeAllRanges(); // Deselect the code
+            alert("Code copied to clipboard!");
+        }
+
+        // Function to open JDoodle with the Verilog code
+        function openJdoodle() {
+            const jdoodleUrl = "https://www.jdoodle.com/verilog-online-compiler";
+            window.open(jdoodleUrl, '_blank');
+        }
+    </script>
+</body>
+</html>
