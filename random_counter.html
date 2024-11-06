@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verilog Code Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        pre {
+            background-color: #f8f8f8;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Verilog Code Generator</h1>
+    <label for="regNumber">Enter your Registration Number (e.g., 23BML0051):</label>
+    <input type="text" id="regNumber" placeholder="Enter Registration Number" />
+
+    <button onclick="generateVerilogCode()">Generate Verilog Code</button>
+
+    <div id="errorMessage" class="error"></div>
+
+    <pre id="verilogCode"></pre>
+
+    <!-- Add the Copy Code Button -->
+    <button id="copyButton">Copy Verilog Code</button>
+</div>
+
+<script>
+    function hexToDecimal(hexChar) {
+        const hexMap = {
+            '0': 0, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9,
+            'A': 10, 'B': 11, 'C': 12, 'D': 13, 'E': 14, 'F': 15,
+            'a': 10, 'b': 11, 'c': 12, 'd': 13, 'e': 14, 'f': 15
+        };
+        return hexMap[hexChar.toUpperCase()] !== undefined ? hexMap[hexChar.toUpperCase()] : -1;
+    }
+
+    function generateVerilogCode() {
+        const regNumber = document.getElementById("regNumber").value.trim();
+
+        // Remove any invalid characters and only keep hexadecimal digits (0-9, A-F)
+        const validChars = regNumber.split('').map(char => hexToDecimal(char)).filter(val => val !== -1);
+
+        // Remove duplicates, but preserve the order (starting from the first number)
+        const uniqueDigits = [];
+        validChars.forEach(char => {
+            if (!uniqueDigits.includes(char)) {
+                uniqueDigits.push(char);
+            }
+        });
+
+        if (uniqueDigits.length === 0) {
+            document.getElementById("errorMessage").innerText = "Please enter a valid registration number with hexadecimal digits only.";
+            document.getElementById("verilogCode").innerText = "";
+            return;
+        }
+
+        // Define the state transitions for digits 0-9 and A-F (hexadecimal)
+        const stateTransitions = {
+            0: "0000",  // 0 --> 0000
+            1: "0001",  // 1 --> 0001
+            2: "0010",  // 2 --> 0010
+            3: "0011",  // 3 --> 0011
+            4: "0100",  // 4 --> 0100
+            5: "0101",  // 5 --> 0101
+            6: "0110",  // 6 --> 0110
+            7: "0111",  // 7 --> 0111
+            8: "1000",  // 8 --> 1000
+            9: "1001",  // 9 --> 1001
+            10: "1010", // A --> 1010
+            11: "1011", // B --> 1011
+            12: "1100", // C --> 1100
+            13: "1101", // D --> 1101
+            14: "1110", // E --> 1110
+            15: "1111"  // F --> 1111
+        };
+
+        let verilogCode = `module Synchronous_RESET_Random_State_Counter_${regNumber}(clk, reset, UD, O);\n`;
+        verilogCode += "    input clk, reset, UD;\n";
+        verilogCode += "    output reg [3:0] O;\n\n";
+        verilogCode += "    always @(posedge clk) begin\n";
+        verilogCode += "        if (!reset) begin\n";
+        verilogCode += "            if (UD == 0) begin\n";
+        verilogCode += "                case (O)  // Down direction state transitions\n";
+
+        // Down direction transitions
+        for (let i = 0; i < uniqueDigits.length; i++) {
+            let currentDigit = uniqueDigits[i];
+            let nextDigit = (i + 1 < uniqueDigits.length) ? uniqueDigits[i + 1] : uniqueDigits[0]; // Wrap around to first digit
+            verilogCode += `                    4'b${stateTransitions[currentDigit]}: O = 4'b${stateTransitions[nextDigit]};    // ${currentDigit} --> ${nextDigit}\n`;
+        }
+
+        // Set the default value to the first valid digit's corresponding state (down counting)
+        verilogCode += `                    default: O = 4'b${stateTransitions[uniqueDigits[0]]};    // Default: Start from ${uniqueDigits[0]} in down counting\n`;
+
+        verilogCode += "                endcase\n";
+        verilogCode += "            end else begin\n";
+        verilogCode += "                case (O)  // Up direction state transitions\n";
+
+        // Up direction transitions (we ensure the default state is the last element in the sequence)
+        for (let i = uniqueDigits.length - 1; i >= 0; i--) {
+            let currentDigit = uniqueDigits[i];
+            let prevDigit = (i - 1 >= 0) ? uniqueDigits[i - 1] : uniqueDigits[uniqueDigits.length - 1]; // Wrap around to last digit
+            verilogCode += `                    4'b${stateTransitions[currentDigit]}: O = 4'b${stateTransitions[prevDigit]};    // ${currentDigit} --> ${prevDigit}\n`;
+        }
+
+        // The default value for the up counting should be the last element in the sequence (as requested)
+        verilogCode += `                    default: O = 4'b${stateTransitions[uniqueDigits[uniqueDigits.length - 1]]};    // Default: Start from ${uniqueDigits[uniqueDigits.length - 1]} in up counting\n`;
+
+        verilogCode += "                endcase\n";
+        verilogCode += "            end\n";
+        verilogCode += "        end else begin\n";
+        verilogCode += "            O = 4'b0000;  // Reset state to 4'b0000\n";
+        verilogCode += "        end\n";
+        verilogCode += "    end\n";
+        verilogCode += "endmodule\n\n";
+        
+        // Testbench for the Verilog code
+        verilogCode += `module T5_Synchronous_RESET_Random_State_Counter_${regNumber}_tb;\n`;
+        verilogCode += "    reg clk, UD, reset;\n";
+        verilogCode += "    wire [3:0] O;\n";
+        verilogCode += `    Synchronous_RESET_Random_State_Counter_${regNumber} inst(clk, reset, UD, O);\n`;
+        verilogCode += "    integer i;\n\n";
+        verilogCode += "    initial begin\n";
+        verilogCode += "        $display(\"Synchronous RESET 4-bit Random UP/DOWN Counter output table\");\n";
+        verilogCode += "        $display(\"Up counting direction with all 16 states and down counting\");\n";
+        verilogCode += "        clk = 0;\n";
+        verilogCode += "        UD = 1;  // Set up direction\n";
+        verilogCode += "        reset = 0;  // Reset is initially off\n";
+        verilogCode += "        #10 reset = 1;  // Apply reset\n";
+        verilogCode += "        #10 reset = 0;  // Disable reset\n";
+        verilogCode += "        for (i = 0; i < 16; i = i + 1) begin\n";
+        verilogCode += "            #10 clk = ~clk;\n";
+        verilogCode += "            $display(\"Time = %0t, O = %0b\", $time, O);\n";
+        verilogCode += "        end\n";
+        verilogCode += "        UD = 0;  // Switch to down direction\n";
+        verilogCode += "        #10 reset = 1;  // Apply reset\n";
+        verilogCode += "        #10 reset = 0;  // Disable reset\n";
+        verilogCode += "        for (i = 0; i < 16; i = i + 1) begin\n";
+        verilogCode += "            #10 clk = ~clk;\n";
+        verilogCode += "            $display(\"Time = %0t, O = %0b\", $time, O);\n";
+        verilogCode += "        end\n";
+        verilogCode += "        $finish;\n";
+        verilogCode += "    end\n";
+        verilogCode += "endmodule\n";
+
+        document.getElementById("verilogCode").innerText = verilogCode;
+        document.getElementById("errorMessage").innerText = "";
+    }
+
+    // Function to copy the Verilog code to clipboard
+    document.getElementById('copyButton').addEventListener('click', function() {
+        const code = document.getElementById("verilogCode").innerText;
+        navigator.clipboard.writeText(code).then(function() {
+            alert("Verilog code copied to clipboard!");
+        }, function(err) {
+            alert("Failed to copy text: " + err);
+        });
+    });
+</script>
+
+</body>
+</html>
