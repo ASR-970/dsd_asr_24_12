@@ -11,6 +11,9 @@
             margin: 0;
             padding: 0;
             color: #dcdcdc;
+            min-height: 100vh; /* Ensure body takes up at least full viewport height */
+            display: flex;
+            flex-direction: column;
         }
 
         .container, .button-container {
@@ -48,12 +51,12 @@
         }
 
         button {
-            padding: 5px 10px;
+            padding: 10px 20px;
             border: none;
             border-radius: 8px;
             background-color: #00ccff;
             color: #1e1e1e;
-            font-size: 14px;
+            font-size: 16px;
             cursor: pointer;
             transition: background-color 0.3s, transform 0.3s;
             height: 60px; /* Fixed height for buttons to ensure uniform size */
@@ -89,6 +92,30 @@
             justify-content: center;
             gap: 10px; /* Space between buttons */
         }
+
+        /* Add style for the top button */
+        .top-button {
+            grid-column: span 3; /* Makes the "Online Verilog Compiler" button span across the full width */
+        }
+
+        /* Add style for the K-map solver button */
+        .kmap-button {
+            grid-column: span 3; /* Full width button */
+        }
+
+        /* Footer styling */
+        .footer {
+            background-color: rgba(30, 30, 30, 0.85);
+            padding: 20px;
+            text-align: center;
+            color: #b0b0b0;
+            margin-top: 30px; /* Space between the button grid and footer */
+        }
+
+        /* Adjust the content so it doesn't overlap with the footer */
+        #buttonContainer, #regNumberPage {
+            flex: 1;
+        }
     </style>
 </head>
 <body>
@@ -104,15 +131,23 @@
     <div id="buttonContainer" class="button-container" style="display:none;">
         <h1>Choose from the Options</h1>
         <div class="button-grid">
+            <button class="top-button" onclick="window.open('https://www.tutorialspoint.com/compile_verilog_online.php', '_blank')">Online Verilog Compiler</button>
             <button id="button1">DATA FLOW MODEL</button>
             <button id="button2">BEHAVIOURAL MODEL(CASE)</button>
             <button id="button3">MUX</button>
-            <button id="button4" onclick="openDemuxPage()">DEMUX</button> <!-- DEMUX button -->
-            <button id="button5">DECODER</button>
-            <button id="button6">NAND LOGIC</button>
-            <button id="button7">NOR LOGIC</button>
-            <button id="button8">AOI</button>
-            <button id="button9">OAI</button>
+            <button id="button4" onclick="openDecoderPage()">DECODER</button>
+            <button id="button5" onclick="openRandomCounterPage()">RANDOM COUNTER</button> <!-- New Random Counter button -->
+            <button id="button6" onclick="openAOIPage()">AOI</button> <!-- AOI button -->
+            <button id="button7" onclick="openOAIPage()">OAI</button> <!-- OAI button -->
+            <button id="button8" onclick="window.open('https://colab.research.google.com/drive/195yg0lhqCT_pZ70Ug5VCmdZfIGQv3xJN?usp=sharing', '_blank')">Custom XY Flipflop</button>
+            <button id="button9" onclick="window.open('https://colab.research.google.com/drive/1-owm5XW7Vkcdi9UbOJYrdCDw_Cc2eL0q?usp=sharing', '_blank')">Excess-N Counter</button>
+            <button id="button10" onclick="window.open('https://colab.research.google.com/drive/1zoGf6Wieqf7yVGxPjQjEaL_j96kZLOd8?usp=sharing', '_blank')">Mod N Counter</button>
+            <button id="button11" onclick="window.open('https://colab.research.google.com/drive/1ipoey2Dwv8WAV08ZurXJx-hkBypYsp-h?usp=sharing', '_blank')">Code Converter</button>
+            <button class="kmap-button" onclick="window.open('https://www.charlie-coleman.com/experiments/kmap/', '_blank')">Kmap Solver</button>
+        </div>
+
+        <div class="footer">
+            <p>Developed by taking Dhanabal sir's code as reference.</p>
         </div>
     </div>
 
@@ -152,108 +187,62 @@
             window.open("mux.html", "_blank"); // Open the new webpage for MUX
         });
 
-        // Function to open the DEMUX page
-        function openDemuxPage() {
-            window.open("demux.html", "_blank"); // Open the new webpage for DEMUX
+        // Function to open the DECODER page
+        function openDecoderPage() {
+            window.open("decoder.html", "_blank"); // Open the new webpage for DECODER
         }
 
-        // Event listener for generating Verilog code for DATA FLOW MODEL
-        document.getElementById("generateCode").addEventListener("click", function() {
-            const regNumber = document.getElementById("regNumber").value.trim().toUpperCase();
-            const minterms = [];
+        // Function to open the RANDOM COUNTER page
+        function openRandomCounterPage() {
+            window.open("random_counter.html", "_blank"); // Open the new webpage for RANDOM COUNTER
+        }
 
-            // Hexadecimal mapping for A to F
+        // Function to open the AOI page
+        function openAOIPage() {
+            window.open("aoi.html", "_blank"); // Open the new webpage for AOI
+        }
+
+        // Function to open the OAI page
+        function openOAIPage() {
+            window.open("oai.html", "_blank"); // Open the new webpage for OAI
+        }
+
+        // Event listener for generating Verilog code
+        document.getElementById("generateCode").addEventListener("click", function() {
+            let regNumber = document.getElementById("regNumber").value.toUpperCase();
+            let minterms = [];
+
+            // Hexadecimal characters map
             const hexMap = {
-                'A': 10,
-                'B': 11,
-                'C': 12,
-                'D': 13,
-                'E': 14,
-                'F': 15
+                'A': 10, 'B': 11, 'C': 12, 'D': 13, 'E': 14, 'F': 15
             };
 
-            // Determine the minterms based on the registration number
-            for (let char of regNumber) {
-                if (!isNaN(parseInt(char))) {
+            for (let i = 0; i < regNumber.length; i++) {
+                const char = regNumber[i];
+                if (char >= '0' && char <= '9') {
                     minterms.push(parseInt(char)); // Numbers 0-9
                 } else if (hexMap[char] !== undefined) {
-                    minterms.push(hexMap[char]); // Hexadecimal letters A-F
+                    minterms.push(hexMap[char]); // Hex characters A-F
                 }
             }
 
-            // Remove duplicates from the minterms array
-            const uniqueMinterms = [...new Set(minterms)];
+            const verilogCode = generateVerilogCode(minterms);
 
-            // Generate Verilog code based on the minterms
-            let verilogCode = "module logic_function(\n";
-            verilogCode += "    input A, B, C, D,\n"; // Example inputs
-            verilogCode += "    output F\n";
-            verilogCode += ");\n";
-            verilogCode += "    assign F = ";
+            document.getElementById("verilogOutput").textContent = verilogCode; // Display the generated Verilog code
+        });
 
-            // Create a logic expression based on the unique minterms
-            const terms = uniqueMinterms.map(m => {
-                const binary = m.toString(2).padStart(4, '0'); // Convert to binary
-                let term = '('; // Start with an opening parenthesis
-
-                for (let j = 0; j < binary.length; j++) {
-                    if (binary[j] === '1') {
-                        term += `${String.fromCharCode(65 + j)}`; // A, B, C, D
-                    } else {
-                        term += `~${String.fromCharCode(65 + j)}`; // ~A, ~B, ~C, ~D
-                    }
-
-                    // Add '&' between terms except for the last one
-                    if (j < binary.length - 1) {
-                        term += ' & ';
-                    }
-                }
-
-                term += ')'; // Close the parenthesis
-                return term; // Return the term for the minterm
-            }).join(' | '); // Join with '|' to create ORed terms
-
-            verilogCode += terms + ";\n";
-            verilogCode += "endmodule\n\n";
-
-            // Testbench generation
-            verilogCode += "module testbench;\n";
-            verilogCode += "    reg A, B, C, D;\n";
-            verilogCode += "    wire F;\n";
-            verilogCode += "    logic_function lf(A, B, C, D, F);\n\n";
-            verilogCode += "    initial begin\n";
-            verilogCode += "        $monitor(\"Time: %0t | A: %b | B: %b | C: %b | D: %b | F: %b\", $time, A, B, C, D, F);\n";
-
-            // Test all combinations of A, B, C, D
-            for (let i = 0; i < 16; i++) {
-                const binary = i.toString(2).padStart(4, '0');
-                verilogCode += `        A = ${binary[0]}; B = ${binary[1]}; C = ${binary[2]}; D = ${binary[3]}; #10;\n`;
+        // Function to generate Verilog code
+        function generateVerilogCode(minterms) {
+            let code = `// Verilog Code for MUX based on registration number\n`;
+            code += `module mux_16_1(input [15:0] d, output y, input [3:0] sel);\n`;
+            code += `    assign y = (sel == ${minterms[0]}) ? d[${minterms[0]}] : \n`;
+            for (let i = 1; i < minterms.length; i++) {
+                code += `          (sel == ${minterms[i]}) ? d[${minterms[i]}] : \n`;
             }
-
-            verilogCode += "        $finish;\n";
-            verilogCode += "    end\n";
-            verilogCode += "endmodule\n";
-
-            // Output the generated Verilog code
-            document.getElementById("verilogOutput").textContent = verilogCode;
-        });
-
-        // Copy code to clipboard
-        document.getElementById("copyButton").addEventListener("click", function() {
-            const code = document.getElementById("verilogOutput").textContent;
-            navigator.clipboard.writeText(code).then(function() {
-                alert("Code copied to clipboard!");
-            }).catch(function(err) {
-                console.error("Failed to copy text: ", err);
-            });
-        });
-
-        // Open JDoodle with generated code
-        document.getElementById("openJdoodle").addEventListener("click", function() {
-            const code = document.getElementById("verilogOutput").textContent;
-            const jdoodleURL = `https://www.jdoodle.com/embed/v0/Verilog-CoSim/?code=${encodeURIComponent(code)}`;
-            window.open(jdoodleURL, "_blank");
-        });
+            code += `          0;\n`;
+            code += `endmodule\n`;
+            return code;
+        }
     </script>
 </body>
 </html>
