@@ -11,7 +11,7 @@
             margin: 0;
             padding: 0;
             color: #dcdcdc;
-            min-height: 100vh; /* Ensure body takes up at least full viewport height */
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
@@ -59,7 +59,7 @@
             font-size: 16px;
             cursor: pointer;
             transition: background-color 0.3s, transform 0.3s;
-            height: 60px; /* Fixed height for buttons to ensure uniform size */
+            height: 60px;
         }
 
         button:hover {
@@ -82,37 +82,33 @@
             color: #00ccff;
             padding: 10px;
             border-radius: 5px;
-            white-space: pre-wrap; /* Allow text to wrap */
-            word-wrap: break-word; /* Break long words if necessary */
-            margin-top: 20px; /* Space above the Verilog output */
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin-top: 20px;
         }
 
         .button-container {
             display: flex;
             justify-content: center;
-            gap: 10px; /* Space between buttons */
+            gap: 10px;
         }
 
-        /* Add style for the top button */
         .top-button {
-            grid-column: span 3; /* Makes the "Online Verilog Compiler" button span across the full width */
+            grid-column: span 3;
         }
 
-        /* Add style for the K-map solver button */
         .kmap-button {
-            grid-column: span 3; /* Full width button */
+            grid-column: span 3;
         }
 
-        /* Footer styling */
         .footer {
             background-color: rgba(30, 30, 30, 0.85);
             padding: 20px;
             text-align: center;
             color: #b0b0b0;
-            margin-top: 30px; /* Space between the button grid and footer */
+            margin-top: 30px;
         }
 
-        /* Adjust the content so it doesn't overlap with the footer */
         #buttonContainer, #regNumberPage {
             flex: 1;
         }
@@ -136,9 +132,9 @@
             <button id="button2">BEHAVIOURAL MODEL(CASE)</button>
             <button id="button3">MUX</button>
             <button id="button4" onclick="openDecoderPage()">DECODER</button>
-            <button id="button5" onclick="openRandomCounterPage()">RANDOM COUNTER</button> <!-- New Random Counter button -->
-            <button id="button6" onclick="openAOIPage()">AOI</button> <!-- AOI button -->
-            <button id="button7" onclick="openOAIPage()">OAI</button> <!-- OAI button -->
+            <button id="button5" onclick="openRandomCounterPage()">RANDOM COUNTER</button>
+            <button id="button6" onclick="openAOIPage()">AOI</button>
+            <button id="button7" onclick="openOAIPage()">OAI</button>
             <button id="button8" onclick="window.open('https://colab.research.google.com/drive/195yg0lhqCT_pZ70Ug5VCmdZfIGQv3xJN?usp=sharing', '_blank')">Custom XY Flipflop</button>
             <button id="button9" onclick="window.open('https://colab.research.google.com/drive/1-owm5XW7Vkcdi9UbOJYrdCDw_Cc2eL0q?usp=sharing', '_blank')">Excess-N Counter</button>
             <button id="button10" onclick="window.open('https://colab.research.google.com/drive/1zoGf6Wieqf7yVGxPjQjEaL_j96kZLOd8?usp=sharing', '_blank')">Mod N Counter</button>
@@ -148,6 +144,17 @@
 
         <div class="footer">
             <p>Developed by taking Dhanabal sir's code as reference.</p>
+            <p>Contact info-</p>
+            <ul>
+                <li>A.S. Rassel<br>
+                    Phn no: +91 97060 73530<br>
+                    Email: i.m.ras.2512@gmail.com
+                </li>
+                <li>Ayush Jaiswal<br>
+                    Phn no: +91 80043 98351<br>
+                    Email: ayush.jaiswal2023@vitstudent.ac.in
+                </li>
+            </ul>
         </div>
     </div>
 
@@ -165,53 +172,43 @@
     </div>
 
     <script>
-        // Automatically transition from the welcome page to the button page after 2 seconds
         setTimeout(function() {
-            document.getElementById("welcomePage").style.display = "none"; // Hide the welcome page
-            document.getElementById("buttonContainer").style.display = "block"; // Show the button page
-        }, 2000); // 2000 milliseconds = 2 seconds
+            document.getElementById("welcomePage").style.display = "none";
+            document.getElementById("buttonContainer").style.display = "block";
+        }, 2000);
 
-        // Event listener for DATA FLOW MODEL button
         document.getElementById("button1").addEventListener("click", function() {
-            window.open("DFL.html", "_blank"); // Open DFL.html page in the same folder
+            window.open("DFL.html", "_blank");
         });
 
-        // Event listener for BEHAVIOURAL MODEL button
         document.getElementById("button2").addEventListener("click", function() {
-            window.open("behavioural_model.html", "_blank"); // Open the new webpage for Behavioral Model
+            window.open("behavioural_model.html", "_blank");
         });
 
-        // Event listener for MUX button
         document.getElementById("button3").addEventListener("click", function() {
-            window.open("mux.html", "_blank"); // Open the new webpage for MUX
+            window.open("mux.html", "_blank");
         });
 
-        // Function to open the DECODER page
         function openDecoderPage() {
-            window.open("decoder.html", "_blank"); // Open the new webpage for DECODER
+            window.open("decoder.html", "_blank");
         }
 
-        // Function to open the RANDOM COUNTER page
         function openRandomCounterPage() {
-            window.open("random_counter.html", "_blank"); // Open the new webpage for RANDOM COUNTER
+            window.open("random_counter.html", "_blank");
         }
 
-        // Function to open the AOI page
         function openAOIPage() {
-            window.open("aoi.html", "_blank"); // Open the new webpage for AOI
+            window.open("aoi.html", "_blank");
         }
 
-        // Function to open the OAI page
         function openOAIPage() {
-            window.open("oai.html", "_blank"); // Open the new webpage for OAI
+            window.open("oai.html", "_blank");
         }
 
-        // Event listener for generating Verilog code
         document.getElementById("generateCode").addEventListener("click", function() {
             let regNumber = document.getElementById("regNumber").value.toUpperCase();
             let minterms = [];
 
-            // Hexadecimal characters map
             const hexMap = {
                 'A': 10, 'B': 11, 'C': 12, 'D': 13, 'E': 14, 'F': 15
             };
@@ -219,29 +216,41 @@
             for (let i = 0; i < regNumber.length; i++) {
                 const char = regNumber[i];
                 if (char >= '0' && char <= '9') {
-                    minterms.push(parseInt(char)); // Numbers 0-9
+                    minterms.push(parseInt(char));
                 } else if (hexMap[char] !== undefined) {
-                    minterms.push(hexMap[char]); // Hex characters A-F
+                    minterms.push(hexMap[char]);
                 }
             }
 
             const verilogCode = generateVerilogCode(minterms);
-
-            document.getElementById("verilogOutput").textContent = verilogCode; // Display the generated Verilog code
+            document.getElementById("verilogOutput").textContent = verilogCode;
         });
 
-        // Function to generate Verilog code
         function generateVerilogCode(minterms) {
-            let code = `// Verilog Code for MUX based on registration number\n`;
-            code += `module mux_16_1(input [15:0] d, output y, input [3:0] sel);\n`;
-            code += `    assign y = (sel == ${minterms[0]}) ? d[${minterms[0]}] : \n`;
-            for (let i = 1; i < minterms.length; i++) {
-                code += `          (sel == ${minterms[i]}) ? d[${minterms[i]}] : \n`;
+                let code = `// Verilog Code for MUX based on registration number\n`;
+                code += `module MuxBasedOnRegNumber(input [3:0] select, output reg out);\n`;
+                code += `always @(*) begin\n`;
+                code += `  case (select)\n`;
+                minterms.forEach((minterm, index) => {
+                    code += `    4'd${minterm}: out = 1'b1;\n`;
+                });
+                code += `    default: out = 1'b0;\n`;
+                code += `  endcase\n`;
+                code += `end\n`;
+                code += `endmodule\n`;
+                return code;
             }
-            code += `          0;\n`;
-            code += `endmodule\n`;
-            return code;
-        }
-    </script>
-</body>
+
+            document.getElementById("copyButton").addEventListener("click", function() {
+                const verilogOutput = document.getElementById("verilogOutput");
+                navigator.clipboard.writeText(verilogOutput.textContent).then(() => {
+                    alert("Verilog code copied to clipboard!");
+                });
+            });
+
+            document.getElementById("openJdoodle").addEventListener("click", function() {
+                window.open("https://www.jdoodle.com/execute-verilog-online", "_blank");
+            });
+        </script>
+    </body>
 </html>
